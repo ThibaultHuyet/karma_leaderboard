@@ -11,4 +11,4 @@ reddit= praw.Reddit(client_id = CI,
 for submission in reddit.subreddit('all').hot(limit = 25):
     print(str(submission.subreddit) + ":\t" +
           str(submission.score) + ":\t" +
-          str(submission.url))
+          str(submission.id))
