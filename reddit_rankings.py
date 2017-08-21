@@ -1,6 +1,7 @@
 import praw
 from pymongo import MongoClient
 import datetime
+
 # Settings file is created by the user
 # Due to sensitive data, this is ignored by github
 from settings import CI, CS, PW, UA, UN
@@ -11,6 +12,12 @@ reddit= praw.Reddit(client_id = CI,
                     user_agent = UA,
                     username = UN
                     )
+
+"""
+Currently there is a problem in the add_to_collection function
+It does not add new posts correctly under a subreddit.
+It also does not properly update the score of each subreddit
+"""
 
 def add_to_collection(client, db, posts, checked, subs):
 
@@ -31,7 +38,8 @@ def add_to_collection(client, db, posts, checked, subs):
 							"post_id" : str(submission.id),
 							"time" : datetime.datetime.utcnow()
 							},
-					"score" : int(submission.score)
+					"score" : int(submission.score) # <---- Something is wrong with this. 
+													# I need to find a way to update this with each new subreddit
 					}
 
 			result = posts.insert_one(post).inserted_id
@@ -54,6 +62,7 @@ def add_to_collection(client, db, posts, checked, subs):
 							},
 							upsert = False)
 
+			# Take a look at this part of the code as this is probably where the error is
 			posts.update_one({"_id" : str(submission.subreddit)},
 							{'$inc' : {'score' : +int(submission.score), "score":1}}
 							)
