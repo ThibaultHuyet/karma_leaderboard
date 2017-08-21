@@ -1,7 +1,6 @@
 import praw
 from pymongo import MongoClient
 import datetime
-import pprint
 
 # Settings file is created by the user
 # Due to sensitive data, this is ignored by github
@@ -50,4 +49,3 @@ posts = db.karma_leaderboard
 # add_to_collection(client, db, posts)
 
 checked = check_database(client, db, posts)
-print(checked)
