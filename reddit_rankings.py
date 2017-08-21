@@ -1,7 +1,6 @@
 import praw
 from pymongo import MongoClient
 import datetime
-import pprint
 # Settings file is created by the user
 # Due to sensitive data, this is ignored by github
 from settings import CI, CS, PW, UA, UN
@@ -54,7 +53,7 @@ def add_to_collection(client, db, posts, checked, subs):
 									}
 							},
 							upsert = False)
-			
+
 			posts.update_one({"_id" : str(submission.subreddit)},
 							{'$inc' : {'score' : +int(submission.score), "score":1}}
 							)
