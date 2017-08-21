@@ -14,12 +14,12 @@ reddit= praw.Reddit(client_id = CI,
                     username = UN
                     )
 
-
-
 def add_to_collection(client, db, posts):
+
 	"""
 	This function adds posts to a database
 	"""
+
 	for submission in reddit.subreddit('all').hot(limit = 50):
 		post = {
 				"subreddit" : str(submission.subreddit),
@@ -30,10 +30,10 @@ def add_to_collection(client, db, posts):
 		post_id = posts.insert_one(post).inserted_id
 
 def check_database(client, db, posts):
+
 	"""
 	This function returns a dictionary of every post in the database
 	The dictionary is of the submission_id and the link_score
-
 	"""
 
 	d = {}
@@ -43,8 +43,6 @@ def check_database(client, db, posts):
 
 	return d
 
-	# db.karma_leaderboard.find({}, {post_id:1, _id:0})
-
 client = MongoClient()
 db = client.REDDIT_RANKINGS
 posts = db.karma_leaderboard
@@ -53,12 +51,3 @@ posts = db.karma_leaderboard
 
 checked = check_database(client, db, posts)
 print(checked)
-"""
-d = {}
-
-for post in posts.find({}, {"post_id":1, "_id":0, "link_score":1}):
-	pid = post["post_id"]
-	d[pid] = post["link_score"]
-
-print(d)
-"""
