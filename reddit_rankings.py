@@ -57,6 +57,8 @@ def add_to_collection(client, db, collection, posts, subs):
 			It is needed to update the posts in the subreddit area
 			"""
 			print("Found a new post: " + str(submission.subreddit) + " with post: " + str(submission.id))
+			if (str(submission.id) in posts):
+				print("Something went wrong")
 
 			collection.update_one({"_id" : str(submission.subreddit)},
 									{'$addToSet': { "post" : {'$each' : [{
@@ -95,10 +97,13 @@ def check_database(client, db, collection):
 
 
 	for post in collection.find({}, {"_id":1, "post":1}):
-		subs.append(post["_id"])
-		key = post['post'][0]["_id"]
-		value = post['post'][0]["link_score"]
-		posts.append(key)
+		subs.append(str(post["_id"]))
+		for _ in post['post']:
+			k = str(_["_id"])
+			posts.append(k)
+		# k = str(post['post'][0]["_id"])
+		# value = post['post'][0]["link_score"]
+		# posts.append(k)
 
 	return posts, subs
 
