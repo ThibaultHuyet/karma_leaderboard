@@ -19,7 +19,7 @@ It does not add new posts correctly under a subreddit.
 It also does not properly update the score of each subreddit
 """
 
-def add_to_collection(client, db, posts, checked, subs):
+def add_to_collection(client, db, collection, posts, subs):
 
 	"""
 	This function adds posts to a database
@@ -30,55 +30,59 @@ def add_to_collection(client, db, posts, checked, subs):
 		I need to add a conditional that prevents adding repeat posts
 		However, under certain circumstances, these repeats should be updated
 		"""
-		if str(submission.subreddit) not in subs:
-			post = {
-					"_id" : str(submission.subreddit),
-					"post": [{
-							"_id" : str(submission.id),
-							"link_score" : int(submission.score),
-							"time" : datetime.datetime.utcnow()
-							}],
-					"score" : int(submission.score)
-					}
 
-			result = posts.insert_one(post).inserted_id
+		if str(submission.subreddit) not in subs:
+			print("Found a new subreddit: " + str(submission.subreddit))
+			
+			post = {
+							"_id" : str(submission.subreddit),
+							"post": [{
+									"_id" : str(submission.id),
+									"link_score" : int(submission.score),
+									"time" : datetime.datetime.utcnow()
+									}],
+							"score" : int(submission.score)
+							}
+
+			result = collection.insert_one(post).inserted_id
 
 			subs.append(str(submission.subreddit))
-			checked[str(submission.id)] = int(submission.score) 
+			posts.append(submission.id)
+			
 
-		elif str(submission.subreddit) in subs and str(submission.id) not in checked:
+		elif str(submission.subreddit) in subs and str(submission.id) not in posts:
 			"""
 			Subreddit is in the list but submission is not
 			This is where the update logic should occur
 			It is needed to update the posts in the subreddit area
 			"""
-			# print("Found a new post: " + str(submission.subreddit) + " with post: " + str(submission.id))
+			print("Found a new post: " + str(submission.subreddit) + " with post: " + str(submission.id))
 
-			posts.update_one({"_id" : str(submission.subreddit)},
-							{'$addToSet': { "post" : {'$each' : [{
-																"_id" : str(submission.id),
-																"link_score" : int(submission.score),
-																"time" : datetime.datetime.utcnow()
-																}]}}}
-							)
-			
+			collection.update_one({"_id" : str(submission.subreddit)},
+									{'$addToSet': { "post" : {'$each' : [{
+																		"_id" : str(submission.id),
+																		"link_score" : int(submission.score),
+																		"time" : datetime.datetime.utcnow()
+																		}]}}}
+									)
+					
+			collection.update_one({"_id" : str(submission.subreddit)},
+									{'$inc' : {'score' : +int(submission.score)}}
+									)
 
-			posts.update_one({"_id" : str(submission.subreddit)},
-							{'$inc' : {'score' : +int(submission.score)}}
-							)
-			
-			checked[str(submission.id)] = int(submission.score)
-
+			posts.append(submission.id)
+					
 		else:
 			"""
 			The only situation left would be that the subreddit and post are in the database
 			Thus, I do not care
 			"""
+			print("Nothing new to report")
 			pass
 
-	return checked, subs
+	return posts, subs
 
-def check_database(client, db, posts):
+def check_database(client, db, collection):
 
 	"""
 	This function returns a dictionary of every post in the database
@@ -86,22 +90,26 @@ def check_database(client, db, posts):
 	The list is a list of all the subreddits
 	"""
 
-	d = {}
-	l = []
+	posts = []
+	subs = []
 
 
-	for subreddit in posts.find({}, {"_id":1}):
-		l.append(subreddit["_id"])
-		# d[post["post_id"]] = post["link_score"]
+	for post in collection.find({}, {"_id":1, "post":1}):
+		subs.append(post["_id"])
+		key = post['post'][0]["_id"]
+		value = post['post'][0]["link_score"]
+		posts.append(key)
 
-	return d, l
+	return posts, subs
 
-client = MongoClient()
-db = client.REDDIT_RANKINGS
-posts = db.karma_leaderboard
 
-checked = {}
-subs = []
+if __name__ == "__main__":
+	client = MongoClient()
+	db = client.REDDIT_RANKINGS
+	collection = db.karma_leaderboard
 
-checked, subs = check_database(client, db, posts)
-checked, subs = add_to_collection(client, db, posts, checked, subs)
+	posts = []
+	subs = []
+
+	posts, subs = check_database(client, db, collection)
+	posts, subs = add_to_collection(client, db, collection, posts, subs)
