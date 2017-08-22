@@ -13,16 +13,11 @@ reddit= praw.Reddit(client_id = CI,
                     username = UN
                     )
 
-"""
-Currently there is a problem in the add_to_collection function
-It does not add new posts correctly under a subreddit.
-It also does not properly update the score of each subreddit
-"""
-
 def add_to_collection(client, db, collection, posts, subs):
 
 	"""
 	This function adds posts to a database
+	It also updates lists that it takes in
 	"""
 
 	for submission in reddit.subreddit('all').hot(limit = 500):
@@ -80,9 +75,9 @@ def add_to_collection(client, db, collection, posts, subs):
 def check_database(client, db, collection):
 
 	"""
-	This function returns a dictionary of every post in the database
-	The dictionary is of the submission_id and the link_score
-	The list is a list of all the subreddits
+	This function returns two lists.
+	one list has a list of all submissions
+	other has a list of all subreddits
 	"""
 
 	posts = []
