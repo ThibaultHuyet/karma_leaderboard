@@ -33,13 +33,12 @@ def add_to_collection(client, db, posts, checked, subs):
 		if str(submission.subreddit) not in subs:
 			post = {
 					"_id" : str(submission.subreddit),
-					"post": {
+					"post": [{
+							"_id" : str(submission.id),
 							"link_score" : int(submission.score),
-							"post_id" : str(submission.id),
 							"time" : datetime.datetime.utcnow()
-							},
-					"score" : int(submission.score) # <---- Something is wrong with this. 
-													# I need to find a way to update this with each new subreddit
+							}],
+					"score" : int(submission.score)
 					}
 
 			result = posts.insert_one(post).inserted_id
@@ -53,18 +52,19 @@ def add_to_collection(client, db, posts, checked, subs):
 			This is where the update logic should occur
 			It is needed to update the posts in the subreddit area
 			"""
-			posts.update_one({"_id" : str(submission.subreddit)},
-							{'$set':{
-									"post.post_id" : str(submission.id),
-									"post.link_score" : int(submission.score),
-									"post.time" : datetime.datetime.utcnow()
-									}
-							},
-							upsert = False)
+			# print("Found a new post: " + str(submission.subreddit) + " with post: " + str(submission.id))
 
-			# Take a look at this part of the code as this is probably where the error is
 			posts.update_one({"_id" : str(submission.subreddit)},
-							{'$inc' : {'score' : +int(submission.score), "score":1}}
+							{'$addToSet': { "post" : {'$each' : [{
+																"_id" : str(submission.id),
+																"link_score" : int(submission.score),
+																"time" : datetime.datetime.utcnow()
+																}]}}}
+							)
+			
+
+			posts.update_one({"_id" : str(submission.subreddit)},
+							{'$inc' : {'score' : +int(submission.score)}}
 							)
 			
 			checked[str(submission.id)] = int(submission.score)
@@ -90,9 +90,9 @@ def check_database(client, db, posts):
 	l = []
 
 
-	for post in posts.find({}, {"_id":1, "post.post_id":1, "post.link_score":1}):
-		d[post["post"]["post_id"]] = post["post"]["link_score"]
-		l.append(post["_id"])
+	for subreddit in posts.find({}, {"_id":1}):
+		l.append(subreddit["_id"])
+		# d[post["post_id"]] = post["link_score"]
 
 	return d, l
 
