@@ -32,17 +32,15 @@ def add_to_collection(client, db, collection, posts, subs):
 		"""
 
 		if str(submission.subreddit) not in subs:
-			print("Found a new subreddit: " + str(submission.subreddit))
-			
 			post = {
-							"_id" : str(submission.subreddit),
-							"post": [{
-									"_id" : str(submission.id),
-									"link_score" : int(submission.score),
-									"time" : datetime.datetime.utcnow()
-									}],
-							"score" : int(submission.score)
-							}
+					"_id" : str(submission.subreddit),
+					"post": [{
+							"_id" : str(submission.id),
+							"link_score" : int(submission.score),
+							"time" : datetime.datetime.utcnow()
+							}],
+					"score" : int(submission.score)
+					}
 
 			result = collection.insert_one(post).inserted_id
 
@@ -56,10 +54,6 @@ def add_to_collection(client, db, collection, posts, subs):
 			This is where the update logic should occur
 			It is needed to update the posts in the subreddit area
 			"""
-			print("Found a new post: " + str(submission.subreddit) + " with post: " + str(submission.id))
-			if (str(submission.id) in posts):
-				print("Something went wrong")
-
 			collection.update_one({"_id" : str(submission.subreddit)},
 									{'$addToSet': { "post" : {'$each' : [{
 																		"_id" : str(submission.id),
@@ -79,7 +73,6 @@ def add_to_collection(client, db, collection, posts, subs):
 			The only situation left would be that the subreddit and post are in the database
 			Thus, I do not care
 			"""
-			print("Nothing new to report")
 			pass
 
 	return posts, subs
@@ -101,9 +94,6 @@ def check_database(client, db, collection):
 		for _ in post['post']:
 			k = str(_["_id"])
 			posts.append(k)
-		# k = str(post['post'][0]["_id"])
-		# value = post['post'][0]["link_score"]
-		# posts.append(k)
 
 	return posts, subs
 
