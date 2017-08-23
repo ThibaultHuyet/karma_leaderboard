@@ -50,12 +50,16 @@ def add_to_collection(client, db, collection, posts, subs):
 			It is needed to update the posts in the subreddit area
 			"""
 			collection.update_one({"_id" : str(submission.subreddit)},
-									{'$addToSet': { "post" : {'$each' : [{
-																		"_id" : str(submission.id),
-																		"link_score" : int(submission.score),
-																		"time" : datetime.datetime.utcnow()
-																		}]}}}
-									)
+									{'$addToSet':
+										{ "post" :
+											{'$each' :
+											[{"_id" : str(submission.id),
+											"link_score" : int(submission.score),
+											"time" : datetime.datetime.utcnow() }]
+											}
+										}
+									}
+								)
 					
 			collection.update_one({"_id" : str(submission.subreddit)},
 									{'$inc' : {'score' : +int(submission.score)}}
