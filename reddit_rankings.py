@@ -1,5 +1,5 @@
 import praw
-from pymongo import MongoClient
+import pymongo 
 import datetime
 
 # Settings file is created by the user
@@ -90,6 +90,14 @@ def check_database(client, db, collection):
 
 	return posts, subs, ranking
 
+def returnSorted(client, db, collection):
+	subs, scores = [], []
+
+	for post in collection.find({}, {"_id":1, "score":1}).sort("score", pymongo.DESCENDING):
+		subs.append(str(post["_id"]))
+		scores.append(str(post["score"]))
+
+	return subs, scores
 
 if __name__ == "__main__":
 
