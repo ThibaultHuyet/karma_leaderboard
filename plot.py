@@ -1,21 +1,16 @@
 from reddit_rankings import *
-import praw
+from settings import un, ak
+
 import pymongo
 from pymongo import MongoClient
-import datetime
+
+import plotly.plotly as py
+import plotly.graph_objs as go
 
 # Settings file is created by the user
 # Due to sensitive data, this is ignored by github
-from settings import CI, CS, PW, UA, UN
 
 if __name__ == "__main__":
-	reddit= praw.Reddit(client_id = CI,
-	                    client_secret = CS,
-	                    password = PW,
-	                    user_agent = UA,
-	                    username = UN
-	                    )
-
 	client = MongoClient()
 	db = client.REDDIT_RANKINGS
 	collection = db.karma_leaderboard
@@ -25,6 +20,9 @@ if __name__ == "__main__":
 
 	subreddit, scores = returnSorted(client, db, collection)
 
+	data = [go.Bar(
+					x = subreddit,
+					y = scores
+					)]
 
-	for _ in range(10):
-		print(str(subreddit[_]) + ": " + str(scores[_]))
+	py.plot(data, filename='updated')

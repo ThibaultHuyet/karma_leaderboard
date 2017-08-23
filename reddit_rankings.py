@@ -83,17 +83,20 @@ def check_database(client, db, collection):
 
 	for post in collection.find({}, {"_id":1, "post":1, "score":1}):
 		subs.append(str(post["_id"]))
-		ranking[str(post["_id"])] = int(post["score"])
 		for _ in post['post']:
 			k = str(_["_id"])
 			posts.append(k)
 
-	return posts, subs, ranking
+	return posts, subs
 
 def returnSorted(client, db, collection):
 	subs, scores = [], []
 
+	i = 0
 	for post in collection.find({}, {"_id":1, "score":1}).sort("score", pymongo.DESCENDING):
+		if i > 10:
+			break
+		i += 1
 		subs.append(str(post["_id"]))
 		scores.append(str(post["score"]))
 
