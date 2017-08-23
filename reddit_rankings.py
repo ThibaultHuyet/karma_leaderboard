@@ -6,13 +6,6 @@ import datetime
 # Due to sensitive data, this is ignored by github
 from settings import CI, CS, PW, UA, UN
 
-"""reddit= praw.Reddit(client_id = CI,
-                    client_secret = CS,
-                    password = PW,
-                    user_agent = UA,
-                    username = UN
-                    )"""
-
 def add_to_collection(client, db, collection, posts, subs):
 
 	"""
