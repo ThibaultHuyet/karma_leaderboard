@@ -1,6 +1,7 @@
 from reddit_rankings import *
 import praw
 import pymongo
+from pymongo import MongoClient
 import datetime
 
 # Settings file is created by the user

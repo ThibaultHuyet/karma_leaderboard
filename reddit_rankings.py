@@ -1,5 +1,6 @@
 import praw
-import pymongo 
+import pymongo
+from pymongo import MongoClient
 import datetime
 
 # Settings file is created by the user
@@ -79,7 +80,6 @@ def check_database(client, db, collection):
 
 	posts = []
 	subs = []
-	ranking = {}
 
 	for post in collection.find({}, {"_id":1, "post":1, "score":1}):
 		subs.append(str(post["_id"]))
@@ -114,7 +114,6 @@ if __name__ == "__main__":
 
 	posts = []
 	subs = []
-	ranking = {}
 
-	posts, subs, ranking = check_database(client, db, collection)
+	posts, subs = check_database(client, db, collection)
 	posts, subs = add_to_collection(client, db, collection, posts, subs)
