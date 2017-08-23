@@ -6,12 +6,12 @@ import datetime
 # Due to sensitive data, this is ignored by github
 from settings import CI, CS, PW, UA, UN
 
-reddit= praw.Reddit(client_id = CI,
+"""reddit= praw.Reddit(client_id = CI,
                     client_secret = CS,
                     password = PW,
                     user_agent = UA,
                     username = UN
-                    )
+                    )"""
 
 def add_to_collection(client, db, collection, posts, subs):
 
@@ -86,24 +86,34 @@ def check_database(client, db, collection):
 
 	posts = []
 	subs = []
+	ranking = {}
 
-
-	for post in collection.find({}, {"_id":1, "post":1}):
+	for post in collection.find({}, {"_id":1, "post":1, "score":1}):
 		subs.append(str(post["_id"]))
+		ranking[str(post["_id"])] = int(post["score"])
 		for _ in post['post']:
 			k = str(_["_id"])
 			posts.append(k)
 
-	return posts, subs
+	return posts, subs, ranking
 
 
 if __name__ == "__main__":
+
+	reddit= praw.Reddit(client_id = CI,
+	                    client_secret = CS,
+	                    password = PW,
+	                    user_agent = UA,
+	                    username = UN
+	                    )
+
 	client = MongoClient()
 	db = client.REDDIT_RANKINGS
 	collection = db.karma_leaderboard
 
 	posts = []
 	subs = []
+	ranking = {}
 
-	posts, subs = check_database(client, db, collection)
+	posts, subs, ranking = check_database(client, db, collection)
 	posts, subs = add_to_collection(client, db, collection, posts, subs)
